@@ -2,12 +2,17 @@ package com.bob.parser;
 
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.statement.SQLColumnDefinition;
 import com.alibaba.druid.sql.ast.statement.SQLTableElement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlCreateTableStatement;
 import com.alibaba.druid.util.JdbcConstants;
+import com.bob.model.SQLField;
 import com.bob.model.SQLTable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by bob on 2017/7/13.
@@ -30,8 +35,7 @@ public class ParseCreate {
 
         //解析出的独立语句的个数
 //        System.out.println("size is:" + stmtList.size());
-        for (int i = 0; i < stmtList.size(); i++) {
-            SQLStatement stmt = stmtList.get(i);
+        for (SQLStatement stmt : stmtList) {
             if (stmt instanceof MySqlCreateTableStatement) {
                 MySqlCreateTableStatement mysqlStmt = (MySqlCreateTableStatement)stmt;
 //                mysqlStmt.getTableSource(); //表名
@@ -40,10 +44,26 @@ public class ParseCreate {
 //                mysqlStmt.isIfNotExiists();
                 SQLTable table = new SQLTable();
                 table.setName(mysqlStmt.getTableSource().toString());
-                ;
-                for (SQLTableElement element:mysqlStmt.getTableElementList()) {
-
+                List<SQLField> fields = new ArrayList<>(mysqlStmt.getTableElementList().size());
+                for (SQLTableElement element : mysqlStmt.getTableElementList()) {
+                    if (element instanceof SQLColumnDefinition) {
+                        SQLColumnDefinition col = (SQLColumnDefinition)element;
+                        SQLField field = new SQLField();
+                        field.setName(col.getName().toString());
+                        if (col.getComment() != null) {
+                            field.setComment(col.getComment().toString());
+                        }
+                        field.setType(col.getDataType().getName());
+                        fields.add(field);
+                        table.setFields(fields);
+                    }
                 }
+                Map<String, String> options = new HashMap<>();
+                for (String key : mysqlStmt.getTableOptions().keySet()) {
+                    options.put(key, mysqlStmt.getTableOptions().get(key).toString());
+                }
+                table.setOptions(options);
+                System.out.println(table);
             }
 //            MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
 //            stmt.accept(visitor);

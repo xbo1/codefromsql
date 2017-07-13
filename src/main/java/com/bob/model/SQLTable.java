@@ -10,7 +10,7 @@ public class SQLTable {
     private boolean ifNotExist; //无用
     private String name; //tablename
     private List<SQLField> fields;
-    private List<Map<String, String>> options;
+    private Map<String, String> options;
 
     public boolean isIfNotExist() {
         return ifNotExist;
@@ -36,11 +36,29 @@ public class SQLTable {
         this.fields = fields;
     }
 
-    public List<Map<String, String>> getOptions() {
+    public  Map<String, String> getOptions() {
         return options;
     }
 
-    public void setOptions(List<Map<String, String>> options) {
+    public void setOptions( Map<String, String> options) {
         this.options = options;
+    }
+
+    @Override
+    public String toString() {
+        String ret = "Table: "+name+"\n";
+        String strFields = "Fields:\n";
+        if (fields != null) {
+            for(SQLField field : fields) {
+                strFields = strFields+field.toString()+"\n";
+            }
+        }
+        String strOpts = "Options:\n ";
+        if (options != null) {
+            for (String key : options.keySet()) {
+                strOpts = strOpts+key+": "+options.get(key)+"\n";
+            }
+        }
+        return ret+strFields+strOpts;
     }
 }

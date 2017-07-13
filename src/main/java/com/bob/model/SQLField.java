@@ -30,4 +30,12 @@ public class SQLField {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        if (comment != null && comment.length() > 0) {
+            return name+": "+type+" comment: "+comment;
+        }
+        return name+": "+type;
+    }
 }
