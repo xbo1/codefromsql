@@ -1,0 +1,85 @@
+package com.bob.templ;
+
+import com.bob.model.SQLField;
+import com.bob.model.SQLTable;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by bob on 2017/7/14.
+ */
+public class GenPhpCode {
+    private String genPostData(SQLTable table) {
+        List<SQLField> fields = table.getFields();
+//        $name = $_GPC['name'];
+//        if (empty($name)) {
+//            message("请填写店员姓名", "", "error");
+//        }
+//        $province = $_GPC['province'];
+//        $data = array(
+//            'uniacid'=>$uniacid,
+//            'name'=>$name,
+//            'province'=>$province,
+//        );
+        StringBuilder sb = new StringBuilder();
+        List<String> data = new ArrayList<>();
+        String tab = "\t";
+        String newline = "\n";
+        for (SQLField field : fields) {
+            if (field.isAutoIncrement()) {
+                continue;
+            }
+            if (field.getName().compareToIgnoreCase("uniacid") == 0) {
+                data.add("'uniacid'=>$uniacid,");
+                continue;
+            }
+            String phpName = "$"+field.getName();
+            data.add("'"+field.getName()+"'=>"+phpName+",");
+            sb.append(phpName+" = $_GPC['"+field.getName()+"'];");
+            sb.append(newline+tab+tab);
+            if (field.isNotNull()) {
+                sb.append("if (empty("+phpName+")) {");
+                sb.append(newline+tab+tab+tab);
+                sb.append("message(\"请填写"+field.getComment()+"\", \"\", \"error\");");
+                sb.append(newline+tab+tab);
+                sb.append("}");
+                sb.append(newline+tab+tab);
+            }
+        }
+        sb.append("$data = array(");
+        sb.append(newline+tab+tab+tab);
+        sb.append(String.join(newline+tab+tab+tab,data));
+        sb.append(newline+tab+tab+tab);
+        sb.append(");");
+//        return sb.toString();
+        return sb.toString().replaceAll("\\$", "RDS_CHAR_DOLLAR");
+    }
+    public String generate(SQLTable table) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        BufferedInputStream bufferedInputStream = null;
+        StringBuilder sbtemp = new StringBuilder();
+        try {
+            bufferedInputStream = (BufferedInputStream) classLoader.getResource("static/phpwe7/template.php").getContent();
+            byte[] bs = new byte[1024*4];
+            int len = 0;
+            while ((len= bufferedInputStream.read(bs)) != -1) {
+                sbtemp.append(new String(bs, 0, len));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String template = sbtemp.toString();
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("tablename", table.getName());
+        data.put("defname", table.getShortName());
+        data.put("postdata", genPostData(table));
+        String out = StringTemplateUtils.render(template,data);
+        return out.replaceAll("RDS_CHAR_DOLLAR","\\$");
+    }
+}

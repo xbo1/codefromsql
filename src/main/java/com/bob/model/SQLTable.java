@@ -9,8 +9,22 @@ import java.util.Map;
 public class SQLTable {
     private boolean ifNotExist; //无用
     private String name; //tablename
+    private String comment;
     private List<SQLField> fields;
     private Map<String, String> options;
+
+    private String shortName;
+    public String getShortName() {
+        return shortName;
+    }
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+        this.comment = this.comment.replaceAll("\'", "");
+    }
 
     public boolean isIfNotExist() {
         return ifNotExist;
@@ -25,7 +39,12 @@ public class SQLTable {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = name.replaceAll("`", "");
+        if (this.name.startsWith("ims_")) {
+            this.name = this.name.substring("ims_".length());
+        }
+        String[] ss = this.name.split("_");
+        shortName = ss[ss.length-1];
     }
 
     public List<SQLField> getFields() {
@@ -42,6 +61,9 @@ public class SQLTable {
 
     public void setOptions( Map<String, String> options) {
         this.options = options;
+        if (options.get("comment") != null) {
+            setComment(options.get("comment"));
+        }
     }
 
     @Override

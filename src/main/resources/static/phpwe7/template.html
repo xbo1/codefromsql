@@ -1,0 +1,55 @@
+{template 'common/header'}
+<ul class="nav nav-tabs">
+    <li{if $op == 'display'} class="active"{/if}><a href="{php echo $this->createWebUrl('{{defname}}');}">{{title}}列表</a></li>
+    <li{if $op == 'post'} class="active"{/if}><a href="{php echo $this->createWebUrl('{{defname}}', array('op'=>'post'));}">{if $id > 0}编辑{{title}}{else}添加{{title}}{/if}</a></li>
+</ul>
+
+{if $op == 'post'}
+<form action="" method="post" class="form-horizontal form" enctype="multipart/form-data" id="form1" style="display: block">
+    <div class="panel panel-default" id="step1">
+        <div class="panel-heading">
+            {{title}}信息
+        </div>
+        {{posthtml}}
+        <div class="form-group col-sm-12">
+            <input name="submit" id="submit" type="submit" value="提交" class="btn btn-primary col-lg-1">
+            <input type="hidden" name="token" value="{$_W['token']}" />
+            <input type="hidden" name="id" value="{$id}" />
+        </div>
+    </div>
+</form>
+{/if}
+{if $op == 'display'}
+<div class="clearfix">
+    <form action="" method="post" id="form2">
+        <div class="panel panel-default">
+            <div class="panel-body table-responsive">
+                <table class="table table-hover" style="width:100%;" cellspacing="0" cellpadding="0">
+                    <thead class="navbar-inner">
+                    <tr>
+                        <th width="70">#</th>
+                        {{tbtitle}}
+                        <th width="70" style="text-align:right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {loop $list $index $li}
+                    <tr>
+                        <td>{php echo $index+1}</td>
+                        {{tbtds}}
+                        <td style="text-align:right">
+                            <a href="{php echo $this->createWebUrl('{{defname}}', array('op'=>'post','id' => $li['id']));}" class="btn btn-default" title="详情">编辑</a>
+                            <a href="{php echo $this->createWebUrl('{{defname}}', array('op'=>'del','id' => $li['id']));}" class="btn btn-default" onclick="if(!confirm('您确定要删除吗？')) return false;" title="删除">删除</a>
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="pull-right">{$pager}</div>
+    </form>
+</div>
+{/if}
+
+{template 'common/footer'}
