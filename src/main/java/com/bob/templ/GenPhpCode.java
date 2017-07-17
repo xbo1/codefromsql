@@ -64,7 +64,7 @@ public class GenPhpCode {
         BufferedInputStream bufferedInputStream = null;
         StringBuilder sbtemp = new StringBuilder();
         try {
-            bufferedInputStream = (BufferedInputStream) classLoader.getResource("static/phpwe7/template.php").getContent();
+            bufferedInputStream = new BufferedInputStream(classLoader.getResourceAsStream("static/phpwe7/template.php"));
             byte[] bs = new byte[1024*4];
             int len = 0;
             while ((len= bufferedInputStream.read(bs)) != -1) {
